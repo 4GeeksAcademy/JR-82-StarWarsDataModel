@@ -34,32 +34,46 @@ class Login(db.Model):
         }
 
 
-class InformationStored(db.Model):
-    id: Mapped[int] = mapped_column(primary_key=True, )
-    planet_id: Mapped[int] = mapped_column(nullable=True)
-    character_id: Mapped[int] = mapped_column(nullable=True)
-    favorites_id: Mapped[int] = mapped_column(ForeignKey("favorites.id"))
-    info: Mapped["User"] = relationship(back_populates="info_favorited")
+class People(db.Model):
+    id: Mapped[int] = mapped_column(primary_key=True)
+    people: Mapped[str] = mapped_column(nullable=False)
+    favorites: Mapped[List["Favorites"]] = relationship(
+        "Favorites", back_populates="people")
 
     def serialize(self):
         return {
             "id": self.id,
+            "people": self.people
+        }
 
-            # do not serialize the password, its a security breach
+
+class Planet(db.Model):
+    id: Mapped[int] = mapped_column(primary_key=True)
+    planet: Mapped[str] = mapped_column(nullable=False)
+    favorites: Mapped[List["Favorites"]] = relationship(
+        "Favorites", back_populates="planet")
+
+    def serialize(self):
+        return {
+            "id": self.id,
+            "planet": self.planet
         }
 
 
 class Favorites(db.Model):
-    id: Mapped[int] = mapped_column(primary_key=True, )
-    favorite_the_planet_id: Mapped[int] = mapped_column(nullable=True)
-    favorite_the_character_id: Mapped[int] = mapped_column(nullable=True)
-    favorite_planets_id: Mapped[int] = mapped_column(nullable=True)
-    favorite_characters_id: Mapped[int] = mapped_column(nullable=True)
-    info_favorited: Mapped[List["InformationStored"]] = relationship(back_populates="info")
+    id: Mapped[int] = mapped_column(primary_key=True)
+    favorite_people_id: Mapped[int] = mapped_column(
+        ForeignKey("people.id"), nullable=True)
+    favorite_planet_id: Mapped[int] = mapped_column(
+        ForeignKey("planet.id"), nullable=True)
+    people: Mapped["People"] = relationship(
+        "People", back_populates="favorites")
+    planet: Mapped["Planet"] = relationship(
+        "Planet", back_populates="favorites")
 
     def serialize(self):
         return {
             "id": self.id,
-
-            # do not serialize the password, its a security breach
+            "favorite_people_id": self.favorite_people_id,
+            "favorite_planet_id": self.favorite_planet_id
         }
